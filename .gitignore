@@ -1,0 +1,13 @@
+# Ignore all Python files except new3.py
+*.py
+!new3.py
+
+# Ignore other environments and metadata
+myenv/
+__pycache__/
+.env
+*.pkl
+*.ipynb
+faiss_store_ollama/
+*.txt
+!requirements.txt

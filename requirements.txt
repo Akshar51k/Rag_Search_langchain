@@ -1,0 +1,10 @@
+langchain
+langchain-core
+langchain-community
+langchain-groq
+langchain-text-splitters
+unstructured
+faiss-cpu
+streamlit
+sentence-transformers
+python-dotenv
