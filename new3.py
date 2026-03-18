@@ -5,6 +5,8 @@ import time
 from dotenv import load_dotenv
 load_dotenv()
 
+os.environ['USER_AGENT'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+
 from langchain_groq import ChatGroq
 from langchain_community.document_loaders import UnstructuredURLLoader
 from langchain_community.vectorstores import FAISS
@@ -41,13 +43,15 @@ llm = ChatGroq(
 # Embeddings (HuggingFace — works on Streamlit Cloud)
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
+from langchain_community.document_loaders import WebBaseLoader
+
 # Process URLs
 if process_url_clicked and urls:
-    loader = UnstructuredURLLoader(
-        urls=urls,
-        headers={
+    loader = WebBaseLoader(
+        web_paths=urls,
+        header_template={
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-        },
+        }
     )
 
     data = loader.load()
