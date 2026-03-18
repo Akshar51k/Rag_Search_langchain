@@ -61,14 +61,17 @@ if process_url_clicked and urls:
     main_placeholder.text("Text Splitting...Started...✅")
     docs = text_splitter.split_documents(data)
 
-    # Build FAISS index
-    vectorstore = FAISS.from_documents(docs, embeddings)
-    main_placeholder.text("Embedding + FAISS Index Created...✅")
-    time.sleep(1)
-
-    # Save to session state (no disk needed)
-    st.session_state["vectorstore"] = vectorstore
-    st.success("Processing Complete!")
+    if not docs:
+        st.error("Error: Could not extract any text from the URLs. The websites might be blocking access.")
+    else:
+        # Build FAISS index
+        vectorstore = FAISS.from_documents(docs, embeddings)
+        main_placeholder.text("Embedding + FAISS Index Created...✅")
+        time.sleep(1)
+    
+        # Save to session state (no disk needed)
+        st.session_state["vectorstore"] = vectorstore
+        st.success("Processing Complete!")
 
 # Query input
 query = st.text_input("Ask a Question:")
