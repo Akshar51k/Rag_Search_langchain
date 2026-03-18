@@ -36,8 +36,7 @@ groq_api_key = os.environ.get("GROQ_API_KEY")
 llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0.8,
-    api_key=groq_api_key,
-    max_tokens=1000,
+    api_key=groq_api_key
 )
 
 # Embeddings (HuggingFace — works on Streamlit Cloud)
