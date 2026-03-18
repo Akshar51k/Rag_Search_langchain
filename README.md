@@ -1,3 +1,6 @@
+try out this amazing project: "https://ragsearchlangchain-xwkunewlhtwsniosdtrkfn.streamlit.app/"
+
+
 # News Research Tool 📈
 
 A powerful, user-friendly web application built with Streamlit and LangChain that allows users to input news article URLs, process their content, and ask questions to get precise, source-backed answers. The tool uses the lightning-fast **Groq API** (Llama 3.3 70B model) in the backend and **HuggingFace** embeddings for semantic search.
