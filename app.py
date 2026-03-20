@@ -165,7 +165,7 @@ if process_url_clicked:
             with st.spinner("Splitting text into chunks..."):
                 splitter = RecursiveCharacterTextSplitter(
                     chunk_size = 1500,
-                    chunk_overlap=chunk_size // 5,
+                    chunk_overlap=200,
                 )
                 docs = splitter.split_documents(all_docs)
 
