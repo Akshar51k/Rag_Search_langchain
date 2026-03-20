@@ -3,9 +3,13 @@ langchain-core
 langchain-community
 langchain-groq
 langchain-text-splitters
+langchain-classic
+langchain-huggingface
 unstructured
 faiss-cpu
 streamlit
 sentence-transformers
 python-dotenv
 beautifulsoup4
+pymupdf
+requests
