@@ -15,11 +15,11 @@ from langchain_classic.chains import RetrievalQAWithSourcesChain
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.prompts import PromptTemplate
 
-# UI
+
 st.title("ChatBot: News Research Tool 📈")
 st.sidebar.title("News Article URLs")
 
-# Input URLs
+# inputurls
 urls = []
 for i in range(3):
     url = st.sidebar.text_input(f"URL {i+1}")
@@ -30,16 +30,16 @@ process_url_clicked = st.sidebar.button("Process URLs")
 
 main_placeholder = st.empty()
 
-# Groq LLM (reads GROQ_API_KEY from .env file)
+# .env load
 groq_api_key = os.environ.get("GROQ_API_KEY")
 
 llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0.8,
-    api_key=groq_api_key
+    api_key=groq_api_key,
 )
 
-# Embeddings (HuggingFace — works on Streamlit Cloud)
+# Embeddings model
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 from langchain_community.document_loaders import WebBaseLoader
@@ -67,16 +67,16 @@ if process_url_clicked and urls:
     if not docs:
         st.error("Error: Could not extract any text from the URLs. The websites might be blocking access.")
     else:
-        # Build FAISS index
+        # faais index create
         vectorstore = FAISS.from_documents(docs, embeddings)
         main_placeholder.text("Embedding + FAISS Index Created...✅")
         time.sleep(1)
     
-        # Save to session state (no disk needed)
+        #save to session state (no disk needed)
         st.session_state["vectorstore"] = vectorstore
         st.success("Processing Complete!")
 
-# Query input
+#query input
 query = st.text_input("Ask a Question:")
 
 if query:

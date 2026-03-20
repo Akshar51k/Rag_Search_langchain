@@ -1,6 +1,7 @@
 # Ignore all Python files except new3.py
 *.py
 !new3.py
+!app.py
 
 # Ignore other environments and metadata
 myenv/
@@ -11,3 +12,4 @@ __pycache__/
 faiss_store_ollama/
 *.txt
 !requirements.txt
+faiss_index/
