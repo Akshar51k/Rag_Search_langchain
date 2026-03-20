@@ -1,4 +1,4 @@
-try out this amazing project: "https://ragsearchlangchain-xwkunewlhtwsniosdtrkfn.streamlit.app/"
+try out this amazing project: "https://ragsearchlangchain.streamlit.app/"
 
 
 # News Research Tool 📈
