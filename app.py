@@ -24,18 +24,18 @@ from langchain_community.document_loaders import WebBaseLoader
 st.set_page_config(page_title="News Research Tool", page_icon="📈")
 st.title("📈 News Research Tool")
 
-# ── API key guard ──────────────────────────────────────────────────────────────
+
 groq_api_key = os.environ.get("GROQ_API_KEY")
 if not groq_api_key:
     st.error("GROQ_API_KEY not found. Add it to your .env file and restart.")
     st.stop()
 
-# ── Cached resources ───────────────────────────────────────────────────────────
+
 @st.cache_resource
-def load_llm(temperature):
+def load_llm():
     return ChatGroq(
         model="llama-3.3-70b-versatile",
-        temperature=temperature,
+        temperature = 0.5,
         api_key=groq_api_key,
     )
 
@@ -43,7 +43,7 @@ def load_llm(temperature):
 def load_embeddings():
     return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
-# ── URL type detection ─────────────────────────────────────────────────────────
+#url type detection
 def is_pdf_url(url):
     if url.lower().endswith(".pdf"):
         return True
@@ -62,7 +62,7 @@ JS_HEAVY_DOMAINS = [
 def is_dynamic_url(url):
     return any(domain in url for domain in JS_HEAVY_DOMAINS)
 
-# ── Loaders ────────────────────────────────────────────────────────────────────
+#url loader
 def load_pdf_url(url):
     try:
         from langchain_community.document_loaders import PyMuPDFLoader
@@ -118,9 +118,7 @@ def smart_load(url):
             return "Dynamic (fallback)", docs, err
         return "Static", docs, err
 
-# ── Sidebar ────────────────────────────────────────────────────────────────────
-temperature = 0.5
-chunk_size = 1500
+
 
 st.sidebar.title("Settings")
 
@@ -137,9 +135,9 @@ for i in range(num_urls):
 
 process_url_clicked = st.sidebar.button("Process URLs")
 
-# ── Init models ────────────────────────────────────────────────────────────────
+#init model
 embeddings = load_embeddings()
-llm = load_llm(temperature)
+llm = load_llm()
 
 # ── Process URLs ───────────────────────────────────────────────────────────────
 if process_url_clicked:
@@ -166,7 +164,7 @@ if process_url_clicked:
         else:
             with st.spinner("Splitting text into chunks..."):
                 splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=chunk_size,
+                    chunk_size = 1500,
                     chunk_overlap=chunk_size // 5,
                 )
                 docs = splitter.split_documents(all_docs)
@@ -177,7 +175,7 @@ if process_url_clicked:
 
             st.success(f"Done! Indexed {len(docs)} chunks from {len(urls)} source(s).")
 
-# ── Q&A ────────────────────────────────────────────────────────────────────────
+#prompt query and result
 st.subheader("Ask a Question")
 query = st.text_input("Enter your question:")
 
