@@ -1,5 +1,7 @@
 try out this amazing project: "https://ragsearchlangchain.streamlit.app/"
 
+try out with this URL: "https://roadmap.sh/pdfs/roadmaps/full-stack.pdf"
+
 
 # News Research Tool 📈
 
