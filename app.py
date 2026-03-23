@@ -139,7 +139,7 @@ process_url_clicked = st.sidebar.button("Process URLs")
 embeddings = load_embeddings()
 llm = load_llm()
 
-# ── Process URLs ───────────────────────────────────────────────────────────────
+#url process
 if process_url_clicked:
     if not urls:
         st.warning("Please enter at least one URL.")
