@@ -20,6 +20,7 @@ from langchain_classic.chains import RetrievalQAWithSourcesChain
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain_community.document_loaders import WebBaseLoader
+from langchain_core.messages import HumanMessage
 
 st.set_page_config(page_title="News Research Tool", page_icon="📈")
 st.title("📈 News Research Tool")
@@ -35,7 +36,7 @@ if not groq_api_key:
 def load_llm():
     return ChatGroq(
         model="llama-3.3-70b-versatile",
-        temperature = 0.5,
+        temperature=0.5,
         api_key=groq_api_key,
     )
 
@@ -62,7 +63,7 @@ JS_HEAVY_DOMAINS = [
 def is_dynamic_url(url):
     return any(domain in url for domain in JS_HEAVY_DOMAINS)
 
-#url loader
+#url loaders
 def load_pdf_url(url):
     try:
         from langchain_community.document_loaders import PyMuPDFLoader
@@ -90,7 +91,7 @@ def load_dynamic_url(url):
             from langchain_community.document_loaders import SeleniumURLLoader
             return SeleniumURLLoader(urls=[url]).load(), None
         except ImportError:
-            return [], "Install Playwright (pip install playwright && playwright install chromium) or Selenium (pip install selenium webdriver-manager)"
+            return [], "Install Playwright or Selenium"
     except Exception as e:
         return [], str(e)
 
@@ -112,18 +113,46 @@ def smart_load(url):
         return "Dynamic", docs, err
     else:
         docs, err = load_static_url(url)
-        # fallback to dynamic if almost no content extracted
+        #fallback to dynamic if almost no content extracted
         if not err and docs and len(docs[0].page_content.strip()) < 200:
             docs, err = load_dynamic_url(url)
             return "Dynamic (fallback)", docs, err
         return "Static", docs, err
 
+#llama fallback detection
+NOT_FOUND_PHRASES = [
+    "i couldn't find",
+    "couldn't find this",
+    "not found in the provided",
+    "i don't know",
+    "no information",
+    "cannot find",
+    "not mentioned",
+    "not available in",
+    "provided sources",
+    "i was unable",
+    "no relevant",
+    "does not contain",
+    "not in the context",
+]
 
+def is_not_found(answer: str) -> bool:
+    return any(phrase in answer.lower().strip() for phrase in NOT_FOUND_PHRASES)
 
+def ask_llm_directly(llm, question: str) -> str:
+    prompt = f"""You are a helpful and knowledgeable assistant.
+Answer the following question using your own knowledge.
+Be clear, concise, and informative.
+
+Question: {question}
+
+Answer:"""
+    response = llm.invoke([HumanMessage(content=prompt)])
+    return response.content
+
+#sidebar
 st.sidebar.title("Settings")
-
 num_urls = st.sidebar.slider("Number of URLs", 1, 10, 3)
-
 st.sidebar.markdown("---")
 st.sidebar.title("Article URLs")
 
@@ -135,7 +164,7 @@ for i in range(num_urls):
 
 process_url_clicked = st.sidebar.button("Process URLs")
 
-#init model
+#init models
 embeddings = load_embeddings()
 llm = load_llm()
 
@@ -164,7 +193,7 @@ if process_url_clicked:
         else:
             with st.spinner("Splitting text into chunks..."):
                 splitter = RecursiveCharacterTextSplitter(
-                    chunk_size = 1500,
+                    chunk_size=1500,
                     chunk_overlap=200,
                 )
                 docs = splitter.split_documents(all_docs)
@@ -209,24 +238,34 @@ Answer:"""
             )
 
             result = chain.invoke({"question": query})
+            answer = result.get("answer", "")
 
-        st.subheader("Answer")
-        st.write(result.get("answer", "No answer returned."))
+        #rag found answer
+        if not is_not_found(answer):
+            st.subheader("Answer")
+            st.write(answer)
 
-        # Sources extracted from retrieved doc metadata (reliable)
-        sources = list({
-            doc.metadata.get("source", "")
-            for doc in retrieved_docs
-            if doc.metadata.get("source", "").strip()
-        })
+            sources = list({
+                doc.metadata.get("source", "")
+                for doc in retrieved_docs
+                if doc.metadata.get("source", "").strip()
+            })
+            if sources:
+                st.subheader("Sources")
+                for source in sources:
+                    st.write(source)
 
-        if sources:
-            st.subheader("Sources")
-            for source in sources:
-                st.write(source)
+            with st.expander("View retrieved context chunks"):
+                for i, doc in enumerate(retrieved_docs, 1):
+                    st.markdown(f"**Chunk {i}** — `{doc.metadata.get('source', 'unknown')}`")
+                    st.text(doc.page_content[:500] + ("..." if len(doc.page_content) > 500 else ""))
+                    st.divider()
 
-        with st.expander("View retrieved context chunks"):
-            for i, doc in enumerate(retrieved_docs, 1):
-                st.markdown(f"**Chunk {i}** — `{doc.metadata.get('source', 'unknown')}`")
-                st.text(doc.page_content[:500] + ("..." if len(doc.page_content) > 500 else ""))
-                st.divider()
+        #rag not found fallback to llama
+        else:
+            st.info("💡 Not found in your URLs — answering from LLaMA's general knowledge...")
+            with st.spinner("Asking LLaMA directly..."):
+                answer = ask_llm_directly(llm, query)
+            st.subheader("Answer")
+            st.write(answer)
+            st.caption("⚠️ This answer is from LLaMA's training data (up to Dec 2023), not your URLs.")
